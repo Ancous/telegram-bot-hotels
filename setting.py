@@ -22,3 +22,8 @@ class Time:
             return "Good afternoon"
         else:
             return "Good evening"
+
+
+if __name__ in "__main__":
+    SiteSetting()
+    Time()

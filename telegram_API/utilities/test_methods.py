@@ -15,3 +15,10 @@ def handle_text(message):
 
 
 launch = bot.infinity_polling()
+
+
+if __name__ in "__main__":
+    send_welcome()
+    handle_text()
+
+    launch()
