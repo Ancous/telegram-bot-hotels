@@ -1,8 +1,8 @@
-from telegram_API.utilities.test_methods import send_welcome, handle_text, launch
+from loader import bot
+import handlers # noqa
+from utils.set_bot_commands import set_default_commands
 
 
-if __name__ in "__main__":
-    send_welcome()
-    handle_text()
-
-    launch()
+if __name__ == "__main__":
+    set_default_commands(bot)
+    bot.infinity_polling()
