@@ -1,2 +1,1 @@
-from . import reply
-from . import inline
+from keyboards.keyboards_command_start import keyboard_start
