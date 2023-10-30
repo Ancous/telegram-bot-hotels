@@ -1,1 +1,1 @@
-from handlers.handlers_start import start
+from handlers.handlers_command_start import start
