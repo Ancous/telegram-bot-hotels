@@ -1,1 +1,5 @@
 from keyboards.keyboards_command_start import keyboard_start
+from keyboards.keyboards_sort import keyboard_sort
+from keyboards.keyboard_calendar_year import keyboard_year
+from keyboards.keyboard_calendar_month import keyboard_month
+from keyboards.keyboard_calendar_day import keyboard_day

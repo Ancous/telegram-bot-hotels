@@ -1,5 +1,6 @@
-from config_data.launch_bot import bot
-from handlers import start
+from config_data.variables_constants_bot import VariablesConstants
+import handlers  # noqa
+
 
 if __name__ in "__main__":
-    bot.infinity_polling()
+    VariablesConstants.BOT.infinity_polling()

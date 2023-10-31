@@ -3,13 +3,13 @@ from telebot import types
 
 def keyboard_start() -> object:
     """
-    Описание функции:
+    Function description:
     Создает клавиатуру для команды /start
 
-    Параметры:
+    Arguments:
     None
 
-    Возвращаемое значение:
+    Returns:
     object: class 'telebot.types.ReplyKeyboardMarkup'
     """
     rkm = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
