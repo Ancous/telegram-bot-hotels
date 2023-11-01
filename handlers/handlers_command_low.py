@@ -2,7 +2,7 @@ import telebot
 from telebot.types import ReplyKeyboardRemove
 
 from config_data import Functions, VariablesConstants, VariablesMutable
-from keyboards import keyboard_year, keyboard_month, keyboard_day, keyboard_sort
+from keyboards import Keyboards
 from states import LowState
 
 
@@ -51,7 +51,7 @@ def state_high_city(message: object) -> None:
         VariablesConstants.BOT.send_message(
             chat_id=message.chat.id,
             text="Определитесь с датой заезда в отель.\nЗаезд. Выберите год:",
-            reply_markup=keyboard_year()
+            reply_markup=Keyboards.keyboard_year()
         )
         VariablesConstants.BOT.set_state(
             user_id=message.from_user.id,
@@ -81,7 +81,7 @@ def state_low_arrival_year(message: object) -> None:
         VariablesConstants.BOT.send_message(
             chat_id=message.chat.id,
             text="Заезд. Выберите месяц:",
-            reply_markup=keyboard_month()
+            reply_markup=Keyboards.keyboard_month()
         )
         VariablesConstants.BOT.set_state(
             user_id=message.from_user.id,
@@ -92,7 +92,7 @@ def state_low_arrival_year(message: object) -> None:
         VariablesConstants.BOT.send_message(
             chat_id=message.chat.id,
             text="Неверный ввод.\nЗаезд. Выберите год предложенный ниже:",
-            reply_markup=keyboard_year()
+            reply_markup=Keyboards.keyboard_year()
         )
         VariablesConstants.BOT.set_state(
             user_id=message.from_user.id,
@@ -121,9 +121,9 @@ def state_low_arrival_month(message: object) -> None:
                 VariablesConstants.BOT.send_message(
                     chat_id=message.chat.id,
                     text="Заезд. Выберите день:",
-                    reply_markup=keyboard_day(
-                        year=int(data["low_state"]["arrival_year"]),  # готово
-                        month=int(data["low_state"]["arrival_month"])  # готово
+                    reply_markup=Keyboards.keyboard_day(
+                        year=int(data["low_state"]["arrival_year"]),
+                        month=int(data["low_state"]["arrival_month"])
                     )
                 )
                 VariablesConstants.BOT.set_state(
@@ -134,7 +134,7 @@ def state_low_arrival_month(message: object) -> None:
                 VariablesConstants.BOT.send_message(
                     chat_id=message.chat.id,
                     text="Неверный ввод.\nЗаезд. Выберите месяц предложенный ниже:",
-                    reply_markup=keyboard_month()
+                    reply_markup=Keyboards.keyboard_month()
                 )
                 VariablesConstants.BOT.set_state(
                     user_id=message.from_user.id,
@@ -163,7 +163,7 @@ def state_low_arrival_day(message: object) -> None:
                 VariablesConstants.BOT.send_message(
                     chat_id=message.chat.id,
                     text="Определитесь с датой выезда из отель.\nВыезд. Выберите год:",
-                    reply_markup=keyboard_year(start_year=int(data["low_state"]["arrival_year"]))  # готово
+                    reply_markup=Keyboards.keyboard_year(start_year=int(data["low_state"]["arrival_year"]))
                 )
                 VariablesConstants.BOT.set_state(
                     user_id=message.from_user.id,
@@ -173,9 +173,9 @@ def state_low_arrival_day(message: object) -> None:
                 VariablesConstants.BOT.send_message(
                     chat_id=message.chat.id,
                     text="Неверный ввод.\nЗаезд. Выберите день предложенный ниже:",
-                    reply_markup=keyboard_day(
-                        year=int(data["low_state"]["arrival_year"]),  # готово
-                        month=int(data["low_state"]["arrival_month"])  # готово
+                    reply_markup=Keyboards.keyboard_day(
+                        year=int(data["low_state"]["arrival_year"]),
+                        month=int(data["low_state"]["arrival_month"])
                     )
                 )
                 VariablesConstants.BOT.set_state(
@@ -206,13 +206,13 @@ def state_low_departure_year(message: object) -> None:
                     VariablesConstants.BOT.send_message(
                         chat_id=message.chat.id,
                         text="Выезд. Выберите месяц:",
-                        reply_markup=keyboard_month()
+                        reply_markup=Keyboards.keyboard_month()
                     )
                 else:
                     VariablesConstants.BOT.send_message(
                         chat_id=message.chat.id,
                         text="Выезд. Выберите месяц:",
-                        reply_markup=keyboard_month(start_month=int(data["low_state"]["arrival_month"]))  # готово
+                        reply_markup=Keyboards.keyboard_month(start_month=int(data["low_state"]["arrival_month"]))
                     )
                 VariablesConstants.BOT.set_state(
                     user_id=message.from_user.id,
@@ -222,7 +222,7 @@ def state_low_departure_year(message: object) -> None:
                 VariablesConstants.BOT.send_message(
                     chat_id=message.chat.id,
                     text="Неверный ввод.\nВыезд. Выберите год предложенный ниже:",
-                    reply_markup=keyboard_year(start_year=int(data["high_state"]["arrival_year"]))  # готово
+                    reply_markup=Keyboards.keyboard_year(start_year=int(data["high_state"]["arrival_year"]))
                 )
                 VariablesConstants.BOT.set_state(
                     user_id=message.from_user.id,
@@ -253,19 +253,19 @@ def state_low_departure_month(message: object) -> None:
                     VariablesConstants.BOT.send_message(
                         chat_id=message.chat.id,
                         text="Выезд. Выберите день:",
-                        reply_markup=keyboard_day(
-                            year=int(data["low_state"]["departure_year"]),  # готово
-                            month=int(data["low_state"]["departure_month"]),  # готово
-                            start_day=int(data["low_state"]["arrival_day"])  # готово
+                        reply_markup=Keyboards.keyboard_day(
+                            year=int(data["low_state"]["departure_year"]),
+                            month=int(data["low_state"]["departure_month"]),
+                            start_day=int(data["low_state"]["arrival_day"])
                         )
                     )
                 else:
                     VariablesConstants.BOT.send_message(
                         chat_id=message.chat.id,
                         text="Выезд. Выберите день:",
-                        reply_markup=keyboard_day(
-                            year=int(data["low_state"]["arrival_year"]),  # готово
-                            month=int(data["low_state"]["arrival_month"])  # готово
+                        reply_markup=Keyboards.keyboard_day(
+                            year=int(data["low_state"]["arrival_year"]),
+                            month=int(data["low_state"]["arrival_month"])
                         )
                     )
                 VariablesConstants.BOT.set_state(
@@ -277,13 +277,13 @@ def state_low_departure_month(message: object) -> None:
                     VariablesConstants.BOT.send_message(
                         chat_id=message.chat.id,
                         text="Неверный ввод.\nВыезд. Выберите месяц предложенный ниже:",
-                        reply_markup=keyboard_month()
+                        reply_markup=Keyboards.keyboard_month()
                     )
                 else:
                     VariablesConstants.BOT.send_message(
                         chat_id=message.chat.id,
                         text="Неверный ввод.\nВыезд. Выберите месяц предложенный ниже:",
-                        reply_markup=keyboard_month(start_month=int(data["low_state"]["arrival_month"]))  # готово
+                        reply_markup=Keyboards.keyboard_month(start_month=int(data["low_state"]["arrival_month"]))
                     )
                 VariablesConstants.BOT.set_state(
                     user_id=message.from_user.id,
@@ -324,19 +324,19 @@ def state_low_departure_day(message: object) -> None:
                     VariablesConstants.BOT.send_message(
                         chat_id=message.chat.id,
                         text="Неверный ввод.\nВыезд. Выберите день предложенный ниже:",
-                        reply_markup=keyboard_day(
-                            year=int(data["low_state"]["departure_year"]),  # готово
-                            month=int(data["low_state"]["departure_month"]),  # готово
-                            start_day=int(data["low_state"]["arrival_day"])  # готово
+                        reply_markup=Keyboards.keyboard_day(
+                            year=int(data["low_state"]["departure_year"]),
+                            month=int(data["low_state"]["departure_month"]),
+                            start_day=int(data["low_state"]["arrival_day"])
                         )
                     )
                 else:
                     VariablesConstants.BOT.send_message(
                         chat_id=message.chat.id,
                         text="Неверный ввод.\nВыезд. Выберите день предложенный ниже:",
-                        reply_markup=keyboard_day(
-                            year=int(data["low_state"]["arrival_year"]),  # готово
-                            month=int(data["low_state"]["arrival_month"])  # готово
+                        reply_markup=Keyboards.keyboard_day(
+                            year=int(data["low_state"]["arrival_year"]),
+                            month=int(data["low_state"]["arrival_month"])
                         )
                     )
                 VariablesConstants.BOT.set_state(
@@ -467,7 +467,7 @@ def state_low_children_count(message: object) -> None:
             VariablesConstants.BOT.send_message(
                 chat_id=message.chat.id,
                 text="По какой категории отсортировать лучшие показатели:",
-                reply_markup=keyboard_sort())
+                reply_markup=Keyboards.keyboard_sort())
             VariablesConstants.BOT.set_state(
                 user_id=message.from_user.id,
                 state=LowState.sort
@@ -531,7 +531,7 @@ def state_low_children_age(message: object) -> None:
             VariablesConstants.BOT.send_message(
                 chat_id=message.chat.id,
                 text="По какой категории отсортировать лучшие показатели:",
-                reply_markup=keyboard_sort())
+                reply_markup=Keyboards.keyboard_sort())
             VariablesConstants.BOT.set_state(
                 user_id=message.from_user.id,
                 state=LowState.sort
@@ -579,7 +579,7 @@ def state_low_sort(message: object) -> None:
         VariablesConstants.BOT.send_message(
             chat_id=message.chat.id,
             text="Неверный ввод.\nВыберите один из вариантов предложенных ниже:",
-            reply_markup=keyboard_sort()
+            reply_markup=Keyboards.keyboard_sort()
         )
         VariablesConstants.BOT.set_state(
             user_id=message.from_user.id,

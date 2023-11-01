@@ -1,5 +1,5 @@
 from config_data import VariablesConstants
-from keyboards import keyboard_start
+from keyboards import Keyboards
 
 
 @VariablesConstants.BOT.message_handler(func=lambda message: not message.text in VariablesConstants.COMMANDS)
@@ -18,5 +18,5 @@ def error_text(message: object) -> None:
     VariablesConstants.BOT.send_message(
         chat_id=message.chat.id,
         text="Я не понимаю вашего запроса. Выберите команду из предложенных ниже",
-        reply_markup = keyboard_start()
+        reply_markup=Keyboards.keyboard_start()
     )

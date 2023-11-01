@@ -1,7 +1,8 @@
 from config_data import Functions
 from config_data import VariablesConstants
 from database.main_database import User
-from keyboards import keyboard_start
+from keyboards import Keyboards
+
 
 
 @VariablesConstants.BOT.message_handler(commands=["start"])
@@ -33,5 +34,5 @@ def start(message: object) -> None:
         text=Functions.welcome(
             name=message.from_user.first_name
         ),
-        reply_markup=keyboard_start()
+        reply_markup=Keyboards.keyboard_start()
     )
