@@ -1,1 +1,1 @@
-from keyboards.keyboards_command_start import keyboard_start
+from keyboards.keyboards_bot import Keyboards
