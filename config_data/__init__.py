@@ -1,3 +1,3 @@
-from config_data.functions_bot import Functions
-from config_data.variables_constants_bot import VariablesConstants
-from config_data.variables_mutable_bot import VariablesMutable
+from config_data.functions_bot import FunctionsBot
+from config_data.variables_constants_bot import VariablesConstantsBot
+from config_data.variables_mutable_bot import VariablesMutableBot
