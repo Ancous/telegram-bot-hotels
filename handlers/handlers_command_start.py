@@ -4,7 +4,6 @@ from database.main_database import User
 from keyboards import KeyboardsBot
 
 
-
 @VariablesConstantsBot.BOT.message_handler(commands=["start"])
 def start(message: object) -> None:
     """

@@ -1,0 +1,4 @@
+from hotels_api.requests_api import RequrestsApi
+from hotels_api.command_low_api import low_result
+from hotels_api.command_high_api import high_result
+from hotels_api.checking_city_country_recording_city_id import checking_city_country_recording_city_id

@@ -3,6 +3,7 @@ from telebot.types import ReplyKeyboardRemove
 from datetime import datetime
 
 from config_data import FunctionsBot, VariablesConstantsBot, VariablesMutableBot
+from hotels_api import checking_city_country_recording_city_id, low_result
 from keyboards import KeyboardsBot
 from states import LowState
 
@@ -22,15 +23,41 @@ def state_low_start(message: object) -> None:
     VariablesMutableBot.reset_parameters()
     VariablesConstantsBot.BOT.send_message(
         chat_id=message.chat.id,
-        text="По какому городу будем производить сортировку по отображению худших результатов:",
+        text="По какой стране будем производить сортировку по отображению худших результатов:",
         reply_markup=ReplyKeyboardRemove()
     )
     VariablesConstantsBot.BOT.set_state(
         user_id=message.from_user.id,
-        state=LowState.city
+        state=LowState.country
     )
     with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
         data["low_state"] = {}
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.country)
+def state_high_country(message: object) -> None:
+    """
+    Функция состояния диалога с ботом по команде low
+    Производит запись страны для поиска
+
+    Arguments:
+    message (object): class 'telebot.types.Message'
+
+    Returns:
+    None
+    """
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+    else:
+        VariablesConstantsBot.BOT.send_message(
+            chat_id=message.chat.id,
+            text="По какому городу:"
+        )
+        VariablesConstantsBot.BOT.set_state(
+            user_id=message.from_user.id,
+            state=LowState.city
+        )
+        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+            data["low_state"]["country"] = message.text
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.city)
 def state_high_city(message: object) -> None:
@@ -46,18 +73,31 @@ def state_high_city(message: object) -> None:
     """
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
-    else:
-        VariablesConstantsBot.BOT.send_message(
-            chat_id=message.chat.id,
-            text="Определитесь с датой заезда в отель.\nЗаезд. Выберите год:",
-            reply_markup=KeyboardsBot.keyboard_year()
+    with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        data["low_state"]["city"] = message.text
+        response_1 = checking_city_country_recording_city_id(
+            dict_result=data["low_state"]
         )
-        VariablesConstantsBot.BOT.set_state(
-            user_id=message.from_user.id,
-            state=LowState.arrival_year
-        )
-        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            data["low_state"]["city"] = message.text
+        if not response_1:
+            VariablesConstantsBot.BOT.send_message(
+                chat_id=message.chat.id,
+                text="Страна или город с таким названием не были найдены.\nВведите стану и город еще раз.\nВ какой стране производим поиск."
+            )
+            VariablesConstantsBot.BOT.set_state(
+                user_id=message.from_user.id,
+                state=LowState.country
+            )
+        else:
+            data["low_state"]["city_id"] = response_1
+            VariablesConstantsBot.BOT.send_message(
+                chat_id=message.chat.id,
+                text = "Определитесь с датой заезда в отель.\nЗаезд. Выберите год:",
+                reply_markup = KeyboardsBot.keyboard_year()
+            )
+            VariablesConstantsBot.BOT.set_state(
+                user_id=message.from_user.id,
+                state=LowState.arrival_year
+            )
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.arrival_year)
 def state_low_arrival_year(message: object) -> None:
@@ -459,10 +499,13 @@ def state_low_children_count(message: object) -> None:
             )
         else:
             with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
-                data["low_state"]["children_age"].append([])
+                if not "children_age" in data["low_state"]:
+                    data["low_state"]["children_age"] = [[]]
+                else:
+                    data["low_state"]["children_age"].append([])
             VariablesConstantsBot.BOT.send_message(
                 chat_id=message.chat.id,
-                text="По какой категории отсортировать лучшие показатели:",
+                text="По какой категории отсортировать худшие показатели:",
                 reply_markup=KeyboardsBot.keyboard_sort())
             VariablesConstantsBot.BOT.set_state(
                 user_id=message.from_user.id,
@@ -525,7 +568,7 @@ def state_low_children_age(message: object) -> None:
         else:
             VariablesConstantsBot.BOT.send_message(
                 chat_id=message.chat.id,
-                text="По какой категории отсортировать лучшие показатели:",
+                text="По какой категории отсортировать худшие показатели:",
                 reply_markup=KeyboardsBot.keyboard_sort())
             VariablesConstantsBot.BOT.set_state(
                 user_id=message.from_user.id,
@@ -584,7 +627,7 @@ def state_low_sort(message: object) -> None:
 def state_low_count(message: object) -> None:
     """
     Функция завершения состояния диалога с ботом по команде low
-    Производит запись количества выводимых результатов
+    Выводит пользователю результаты по его запросу
 
     Arguments:
     message (object): class 'telebot.types.Message'
@@ -597,10 +640,23 @@ def state_low_count(message: object) -> None:
     elif message.text.isdigit():
         with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
             data["low_state"]["count"] = message.text
-        VariablesConstantsBot.BOT.send_message(
-            chat_id=message.chat.id,
-            text=f"{data['low_state']}"
-        )
+        hotels_api = low_result(data['low_state'])
+        for numb_count in range(int(data["low_state"]["count"])):
+            text = (f"{hotels_api[numb_count]['name_hotels']}\n"
+                    f"{hotels_api[numb_count]['sort_element']}\n"
+                    f"{hotels_api[numb_count]['url']}"
+                    )
+            if hotels_api[numb_count]["number_photo"] > 0:
+                photo_list = [telebot.types.InputMediaPhoto(media=hotels_api[numb_count][f"photo_{i}"], caption=text) if i == 0
+                              else telebot.types.InputMediaPhoto(media=hotels_api[numb_count][f"photo_{i}"])
+                              for i in range(hotels_api[numb_count]["number_photo"])]
+            else:
+                no_photo = open("../python_basic_diploma/config_data/no_photo.jpg", "rb")
+                photo_list = [telebot.types.InputMediaPhoto(media=no_photo, caption=text)]
+            VariablesConstantsBot.BOT.send_media_group(
+                chat_id=message.chat.id,
+                media=photo_list
+            )
         VariablesConstantsBot.BOT.delete_state(
             user_id=message.from_user.id,
             chat_id=message.chat.id

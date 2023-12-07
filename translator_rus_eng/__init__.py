@@ -1,0 +1,1 @@
+from translator_rus_eng.translator import translator

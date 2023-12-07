@@ -36,6 +36,7 @@ class CustomState(StatesGroup):
     Methods:
     None
     """
+    country = State()
     city = State()
     arrival_year = State()
     arrival_month = State()

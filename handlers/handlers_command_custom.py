@@ -27,10 +27,36 @@ def state_custom_start(message) -> None:
     )
     VariablesConstantsBot.BOT.set_state(
         user_id=message.from_user.id,
-        state=CustomState.city
+        state=CustomState.country
     )
     with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
         data["custom_state"] = {}
+
+@VariablesConstantsBot.BOT.message_handler(state=CustomState.country)
+def state_custom_country(message) -> None:
+    """
+    Функция состояния диалога с ботом по команде custom
+    Производит запись страны для поиска
+
+    Arguments:
+    message (object): class 'telebot.types.Message'
+
+    Returns:
+    None
+    """
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+    else:
+        VariablesConstantsBot.BOT.send_message(
+            chat_id=message.from_user.id,
+            text="В каком городе:"
+        )
+        VariablesConstantsBot.BOT.set_state(
+            user_id=message.from_user.id,
+            state=CustomState.city
+        )
+        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+            data["custom_state"]["country"] = message.text
 
 @VariablesConstantsBot.BOT.message_handler(state=CustomState.city)
 def state_custom_city(message) -> None:
@@ -49,8 +75,8 @@ def state_custom_city(message) -> None:
     else:
         VariablesConstantsBot.BOT.send_message(
             chat_id=message.from_user.id,
-            text="Определитесь с датой заезда в отель.\nЗаезд. Выберите год:",
-            reply_markup=KeyboardsBot.keyboard_year()
+            text = "Определитесь с датой заезда в отель.\nЗаезд. Выберите год:",
+            reply_markup = KeyboardsBot.keyboard_year()
         )
         VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
@@ -1654,7 +1680,10 @@ def state_custom_children_count(message) -> None:
             )
         else:
             with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
-                data["custom_state"]["children_age"].append([])
+                if not "children_age" in data["low_state"]:
+                    data["low_state"]["children_age"] = [[]]
+                else:
+                    data["low_state"]["children_age"].append([])
             VariablesConstantsBot.BOT.send_message(
                 chat_id=message.chat.id,
                 text="По какой категории отсортировать лучшие показатели:",

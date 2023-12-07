@@ -137,9 +137,8 @@ class KeyboardsBot:
         rkm.add(
             types.KeyboardButton(text="Сортировка по ценам"),
             types.KeyboardButton(text="Сортировка по оценкам проживающих"),
-            types.KeyboardButton(text="Сортировка по расстоянию от центра"),
-            types.KeyboardButton(text="Сортировка по звездности отелей"),
-            types.KeyboardButton(text="Сортировка по количеству отзывов проживающих")
+            types.KeyboardButton(text="Сортировка по расстоянию до центра"),
+            types.KeyboardButton(text="Сортировка по звездности отелей")
         )
         return rkm
 
