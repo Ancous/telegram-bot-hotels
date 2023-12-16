@@ -1,3 +1,7 @@
+"""
+Модуль с функциями для работы бота
+"""
+
 import time
 from calendar import monthrange
 from datetime import datetime
@@ -19,9 +23,9 @@ class FunctionsBot:
     create_list_year: создает список с годами для создания клавиатуры
     create_list_month : создает список с числом месяца для создания клавиатуры
     create_list_day: создает список с числом дня месяца для создания клавиатуры
-    create_list_values_filters: записывает в list_del_filters фильтр, относительно сортировки которую ввел пользователь
     conversation_transition: отлавливает из введенного текста пользователя команды и вызывает нужную функции
     """
+
     @staticmethod
     def welcome(name: str) -> str:
         """
@@ -78,7 +82,7 @@ class FunctionsBot:
         Создает список с числом месяца для создания клавиатуры
 
         Parameters:
-        start_year (Optional[int]): число месяца от которого создается список
+        start_month (Optional[int]): число месяца от которого создается список
 
         Returns:
         list: список с числом месяца для создания клавиатуры
@@ -129,8 +133,12 @@ class FunctionsBot:
             for day_1 in VariablesMutableBot.list_days:
                 if flag:
                     new_list_days.append(day_1)
-                if not flag and start_day == int(day_1):
-                    flag = True
+                if not flag:
+                    if int(day_1) == int(start_day):
+                        flag = True
+                    if int(day_1) == int(start_day + 1):
+                        flag = True
+                        new_list_days.append(day_1)
             VariablesMutableBot.list_days = new_list_days
             return new_list_days
         else:
@@ -147,26 +155,6 @@ class FunctionsBot:
             else:
                 VariablesMutableBot.list_days = [str(day + 1) for day in range(days)]
                 return VariablesMutableBot.list_days
-
-    @staticmethod
-    def create_list_values_filters(text) -> None:
-        """
-        Записывает в list_del_filters фильтр, относительно сортировки которую ввел пользователь
-
-        Parameters:
-        text (str): сортировка которую выбрал пользователь
-
-        Returns:
-        None
-        """
-        if text == "Сортировка по ценам":
-            VariablesMutableBot.list_del_filters.append("Фильтр по ценам")
-        elif text == "Сортировка по оценкам проживающих":
-            VariablesMutableBot.list_del_filters.append("Фильтр по оценкам проживающих")
-        elif text == "Сортировка по звездности отелей":
-            VariablesMutableBot.list_del_filters.append("Фильтр по звездности отелей")
-        else:
-            VariablesMutableBot.list_del_filters.append("None")
 
     @staticmethod
     def conversation_transition(message: object) -> None:

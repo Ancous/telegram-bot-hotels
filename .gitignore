@@ -3,3 +3,4 @@ UserDatabase.db
 venv/
 .idea/
 __pycache__/
+setup.cfg

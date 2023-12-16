@@ -1,9 +1,13 @@
+"""
+Модуль работы database
+"""
+
 from peewee import SqliteDatabase, Model, IntegerField, CharField
 
 from config_data import VariablesConstantsBot
 
-
 db = SqliteDatabase(VariablesConstantsBot.DB_PATH)
+
 
 class User(Model):
     """
@@ -25,5 +29,6 @@ class User(Model):
         database (str): имя базы данных
         """
         database = db
+
 
 User.create_table()

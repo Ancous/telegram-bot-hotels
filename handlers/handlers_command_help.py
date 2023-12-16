@@ -1,3 +1,7 @@
+"""
+Модуль работы по команде help
+"""
+
 from config_data import VariablesConstantsBot
 
 
@@ -6,7 +10,7 @@ def my_help(message: object) -> None:
     """
     Отправляет подсказку по командам бота
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns значение:

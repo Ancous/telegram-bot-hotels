@@ -1,3 +1,7 @@
+"""
+Модуль с описанием состояния диалога с ботом при команде low
+"""
+
 from telebot.handler_backends import StatesGroup, State
 
 
@@ -6,6 +10,7 @@ class LowState(StatesGroup):
     Класс состояний диалога с ботом при команде /low
 
     Attributes:
+    country (object): class 'telebot.handler_backends.State'
     city (object): class 'telebot.handler_backends.State'
     arrival_year (object): class 'telebot.handler_backends.State'
     arrival_month (object): class 'telebot.handler_backends.State'

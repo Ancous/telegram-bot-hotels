@@ -1,3 +1,7 @@
+"""
+Модуль работы по команде start
+"""
+
 from config_data import FunctionsBot
 from config_data import VariablesConstantsBot
 from database.main_database import User
@@ -10,7 +14,7 @@ def start(message: object) -> None:
     При первом посещении записывает id пользователя и имя пользователя в базу данных
     Отправляет текст приветствия
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:

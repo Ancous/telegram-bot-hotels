@@ -1,14 +1,18 @@
+"""
+Модуль работы по неизвестным сообщениям и командам для бота
+"""
+
 from config_data import VariablesConstantsBot
 from keyboards import KeyboardsBot
 
 
-@VariablesConstantsBot.BOT.message_handler(func=lambda message: not message.text in VariablesConstantsBot.COMMANDS)
+@VariablesConstantsBot.BOT.message_handler(func=lambda message: message.text not in VariablesConstantsBot.COMMANDS)
 def error_text(message: object) -> None:
     """
     Если пользователь написал не обрабатываемое сообщение
     отправляет в ответ подсказку по командам бота и сообщение о не понимании что делать
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
