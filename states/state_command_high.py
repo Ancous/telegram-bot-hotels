@@ -1,7 +1,34 @@
+"""
+Модуль с описанием состояния диалога с ботом при команде high
+"""
+
 from telebot.handler_backends import StatesGroup, State
 
 
 class HighState(StatesGroup):
+    """
+    Класс состояний диалога с ботом при команде /high
+
+    Attributes:
+    country (object): class 'telebot.handler_backends.State'
+    city (object): class 'telebot.handler_backends.State'
+    arrival_year (object): class 'telebot.handler_backends.State'
+    arrival_month (object): class 'telebot.handler_backends.State'
+    arrival_day (object): class 'telebot.handler_backends.State'
+    departure_year (object): class 'telebot.handler_backends.State'
+    departure_month (object): class 'telebot.handler_backends.State'
+    departure_day (object): class 'telebot.handler_backends.State'
+    room_count (object): class 'telebot.handler_backends.State'
+    adults_count (object): class 'telebot.handler_backends.State'
+    children_count (object): class 'telebot.handler_backends.State'
+    children_age (object): class 'telebot.handler_backends.State'
+    sort (object): class 'telebot.handler_backends.State'
+    count (object): class 'telebot.handler_backends.State'
+
+    Methods:
+    None
+    """
+    country = State()
     city = State()
     arrival_year = State()
     arrival_month = State()

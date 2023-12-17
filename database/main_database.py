@@ -1,13 +1,16 @@
+"""
+Модуль работы database
+"""
+
 from peewee import SqliteDatabase, Model, IntegerField, CharField
 
-from config_data import VariablesConstants
+from config_data import VariablesConstantsBot
 
+db = SqliteDatabase(VariablesConstantsBot.DB_PATH)
 
-db = SqliteDatabase(VariablesConstants.DB_PATH)
 
 class User(Model):
     """
-    Class description:
     Описывает таблицу в базе данных.
     Дочерний класс, класса Model
 
@@ -20,12 +23,12 @@ class User(Model):
 
     class Meta:
         """
-        Class description:
         Определяет имя базы данных
 
         Attributes:
         database (str): имя базы данных
         """
         database = db
+
 
 User.create_table()

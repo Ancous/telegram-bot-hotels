@@ -1,13 +1,13 @@
 """
-Модуль с описанием состояния диалога с ботом при команде low
+Модуль с описанием состояния диалога с ботом при команде custom
 """
 
 from telebot.handler_backends import StatesGroup, State
 
 
-class LowState(StatesGroup):
+class CustomState(StatesGroup):
     """
-    Класс состояний диалога с ботом при команде /low
+    Класс состояний диалога с ботом при команде /custom
 
     Attributes:
     country (object): class 'telebot.handler_backends.State'
@@ -23,6 +23,10 @@ class LowState(StatesGroup):
     children_count (object): class 'telebot.handler_backends.State'
     children_age (object): class 'telebot.handler_backends.State'
     sort (object): class 'telebot.handler_backends.State'
+    range_price (object): class 'telebot.handler_backends.State'
+    range_review (object): class 'telebot.handler_backends.State'
+    range_distance (object): class 'telebot.handler_backends.State'
+    range_star (object): class 'telebot.handler_backends.State'
     count (object): class 'telebot.handler_backends.State'
 
     Methods:
@@ -41,4 +45,8 @@ class LowState(StatesGroup):
     children_count = State()
     children_age = State()
     sort = State()
+    range_price = State()
+    range_review = State()
+    range_distance = State()
+    range_star = State()
     count = State()

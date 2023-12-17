@@ -1,624 +1,724 @@
+"""
+Модуль поддержания состояния диалога с пользователем по команде low
+"""
+
 import telebot
 from telebot.types import ReplyKeyboardRemove
+from datetime import datetime
 
-from config_data import Functions, VariablesConstants, VariablesMutable
-from keyboards import Keyboards
+from config_data import FunctionsBot, VariablesConstantsBot, VariablesMutableBot
+from hotels_api import checking_city_country_recording_city_id, LowApi
+from keyboards import KeyboardsBot
 from states import LowState
 
 
-@VariablesConstants.BOT.message_handler(state="*", commands=["low"])
+@VariablesConstantsBot.BOT.message_handler(state="*", commands=["low"])
 def state_low_start(message: object) -> None:
     """
-    Function description:
     Функция начального состояния диалога с ботом по команде low
     Обновляет все атрибуты класса VariablesMutable
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    VariablesMutable.reset_parameters()
-    VariablesConstants.BOT.send_message(
+    VariablesMutableBot.reset_parameters()
+    VariablesConstantsBot.BOT.send_message(
         chat_id=message.chat.id,
-        text="По какому городу будем производить сортировку по отображению худших результатов:",
+        text="По какой стране будем производить сортировку по отображению худших результатов:",
         reply_markup=ReplyKeyboardRemove()
     )
-    VariablesConstants.BOT.set_state(
+    VariablesConstantsBot.BOT.set_state(
+        user_id=message.from_user.id,
+        state=LowState.country
+    )
+    with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        data["low_state"] = {}
+
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.country)
+def state_high_country(message: object) -> None:
+    """
+    Функция состояния диалога с ботом по команде low
+    Производит запись страны для поиска
+
+    Parameters:
+    message (object): class 'telebot.types.Message'
+
+    Returns:
+    None
+    """
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        data["low_state"]["country"] = message.text
+    VariablesConstantsBot.BOT.send_message(
+        chat_id=message.chat.id,
+        text="По какому городу:"
+    )
+    VariablesConstantsBot.BOT.set_state(
         user_id=message.from_user.id,
         state=LowState.city
     )
-    with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-        data["low_state"] = {}
 
-@VariablesConstants.BOT.message_handler(state=LowState.city)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.city)
 def state_high_city(message: object) -> None:
     """
-    Function description:
     Функция состояния диалога с ботом по команде low
-    Производит запись города для поиска и сортировки поиска
+    Проверяет наличие id-города по запросу к hostel-api
+    Производит запись id-города для поиска
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    else:
-        VariablesConstants.BOT.send_message(
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        data["low_state"]["city"] = message.text
+    city_id = checking_city_country_recording_city_id(
+        dict_result=data["low_state"]
+    )
+    if not city_id:
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.chat.id,
-            text="Определитесь с датой заезда в отель.\nЗаезд. Выберите год:",
-            reply_markup=Keyboards.keyboard_year()
+            text="Страна или город с таким названием не были найдены.\n"
+                 "Введите стану и город еще раз.\n"
+                 "В какой стране производим поиск."
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
+            user_id=message.from_user.id,
+            state=LowState.country
+        )
+    else:
+        data["low_state"]["city_id"] = city_id
+        VariablesConstantsBot.BOT.send_message(
+            chat_id=message.chat.id,
+            text="Определитесь с датой заезда в отель.\n"
+                 "Заезд. Выберите год:",
+            reply_markup=KeyboardsBot.keyboard_year()
+        )
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.arrival_year
         )
-        with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            data["low_state"]["city"] = message.text
 
-@VariablesConstants.BOT.message_handler(state=LowState.arrival_year)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.arrival_year)
 def state_low_arrival_year(message: object) -> None:
     """
-    Function description:
     Функция состояния диалога с ботом по команде low
     Производит запись года заселения в номер
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    elif message.text in VariablesMutable.list_year:
-        with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    if message.text in VariablesMutableBot.list_year:
+        if int(message.text) == datetime.now().year:
+            VariablesMutableBot.year = True
+        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
             data["low_state"]["arrival_year"] = int(message.text)
-        VariablesConstants.BOT.send_message(
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.chat.id,
             text="Заезд. Выберите месяц:",
-            reply_markup=Keyboards.keyboard_month()
+            reply_markup=KeyboardsBot.keyboard_month()
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.arrival_month
         )
-        return
     else:
-        VariablesConstants.BOT.send_message(
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.chat.id,
-            text="Неверный ввод.\nЗаезд. Выберите год предложенный ниже:",
-            reply_markup=Keyboards.keyboard_year()
+            text="Неверный ввод.\n"
+                 "Заезд. Выберите год предложенный ниже:",
+            reply_markup=KeyboardsBot.keyboard_year()
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.arrival_year
         )
 
-@VariablesConstants.BOT.message_handler(state=LowState.arrival_month)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.arrival_month)
 def state_low_arrival_month(message: object) -> None:
     """
-    Function description:
     Функция состояния диалога с ботом по команде low
     Производит запись месяца заселения в номер
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    if message.text.capitalize() in VariablesMutableBot.list_month:
+        if VariablesConstantsBot.DICT_MOUNT_STR_INT.get(message.text.capitalize()) == datetime.now().month:
+            VariablesMutableBot.month = True
+        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+            data["low_state"]["arrival_month"] = VariablesConstantsBot.DICT_MOUNT_STR_INT[message.text.capitalize()]
+        VariablesConstantsBot.BOT.send_message(
+            chat_id=message.chat.id,
+            text="Заезд. Выберите день:",
+            reply_markup=KeyboardsBot.keyboard_day(
+                year=int(data["low_state"]["arrival_year"]),
+                month=int(data["low_state"]["arrival_month"])
+            )
+        )
+        VariablesConstantsBot.BOT.set_state(
+            user_id=message.from_user.id,
+            state=LowState.arrival_day
+        )
     else:
-        with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            if message.text.capitalize() in VariablesMutable.list_month:
-                data["low_state"]["arrival_month"] = VariablesConstants.DICT_MOUNT_STR_INT[message.text.capitalize()]
-                VariablesConstants.BOT.send_message(
-                    chat_id=message.chat.id,
-                    text="Заезд. Выберите день:",
-                    reply_markup=Keyboards.keyboard_day(
-                        year=int(data["low_state"]["arrival_year"]),
-                        month=int(data["low_state"]["arrival_month"])
-                    )
-                )
-                VariablesConstants.BOT.set_state(
-                    user_id=message.from_user.id,
-                    state=LowState.arrival_day
-                )
-            else:
-                VariablesConstants.BOT.send_message(
-                    chat_id=message.chat.id,
-                    text="Неверный ввод.\nЗаезд. Выберите месяц предложенный ниже:",
-                    reply_markup=Keyboards.keyboard_month()
-                )
-                VariablesConstants.BOT.set_state(
-                    user_id=message.from_user.id,
-                    state=LowState.arrival_month
-                )
+        VariablesConstantsBot.BOT.send_message(
+            chat_id=message.chat.id,
+            text="Неверный ввод.\n"
+                 "Заезд. Выберите месяц предложенный ниже:",
+            reply_markup=KeyboardsBot.keyboard_month()
+        )
+        VariablesConstantsBot.BOT.set_state(
+            user_id=message.from_user.id,
+            state=LowState.arrival_month
+        )
 
-@VariablesConstants.BOT.message_handler(state=LowState.arrival_day)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.arrival_day)
 def state_low_arrival_day(message: object) -> None:
     """
-    Function description:
     Функция состояния диалога с ботом по команде low
     Производит запись дня заселения в номер
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    else:
-        with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            if message.text in VariablesMutable.list_days:
-                data["low_state"]["arrival_day"] = int(message.text)
-                VariablesConstants.BOT.send_message(
-                    chat_id=message.chat.id,
-                    text="Определитесь с датой выезда из отель.\nВыезд. Выберите год:",
-                    reply_markup=Keyboards.keyboard_year(start_year=int(data["low_state"]["arrival_year"]))
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        if message.text in VariablesMutableBot.list_days:
+            data["low_state"]["arrival_day"] = int(message.text)
+            VariablesMutableBot.year = False
+            VariablesMutableBot.month = False
+            VariablesConstantsBot.BOT.send_message(
+                chat_id=message.chat.id,
+                text="Определитесь с датой выезда из отель.\n"
+                     "Выезд. Выберите год:",
+                reply_markup=KeyboardsBot.keyboard_year(start_year=int(data["low_state"]["arrival_year"]))
+            )
+            VariablesConstantsBot.BOT.set_state(
+                user_id=message.from_user.id,
+                state=LowState.departure_year
+            )
+        else:
+            VariablesConstantsBot.BOT.send_message(
+                chat_id=message.chat.id,
+                text="Неверный ввод.\n"
+                     "Заезд. Выберите день предложенный ниже:",
+                reply_markup=KeyboardsBot.keyboard_day(
+                    year=int(data["low_state"]["arrival_year"]),
+                    month=int(data["low_state"]["arrival_month"])
                 )
-                VariablesConstants.BOT.set_state(
-                    user_id=message.from_user.id,
-                    state=LowState.departure_year
+            )
+            VariablesConstantsBot.BOT.set_state(
+                user_id=message.from_user.id,
+                state=LowState.arrival_day
+            )
+
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.departure_year)
+def state_low_departure_year(message: object) -> None:
+    """
+    Функция состояния диалога с ботом по команде low
+    Производит запись года выезда из номера
+
+    Parameters:
+    message (object): class 'telebot.types.Message'
+
+    Returns:
+    None
+    """
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        if message.text in VariablesMutableBot.list_year:
+            data["low_state"]["departure_year"] = int(message.text)
+            if data["low_state"]["arrival_year"] == data["low_state"]["departure_year"]:
+                VariablesConstantsBot.BOT.send_message(
+                    chat_id=message.chat.id,
+                    text="Выезд. Выберите месяц:",
+                    reply_markup=KeyboardsBot.keyboard_month(start_month=int(data["low_state"]["arrival_month"]))
                 )
             else:
-                VariablesConstants.BOT.send_message(
+                VariablesConstantsBot.BOT.send_message(
                     chat_id=message.chat.id,
-                    text="Неверный ввод.\nЗаезд. Выберите день предложенный ниже:",
-                    reply_markup=Keyboards.keyboard_day(
+                    text="Выезд. Выберите месяц:",
+                    reply_markup=KeyboardsBot.keyboard_month()
+                )
+            VariablesConstantsBot.BOT.set_state(
+                user_id=message.from_user.id,
+                state=LowState.departure_month
+            )
+        else:
+            VariablesConstantsBot.BOT.send_message(
+                chat_id=message.chat.id,
+                text="Неверный ввод.\n"
+                     "Выезд. Выберите год предложенный ниже:",
+                reply_markup=KeyboardsBot.keyboard_year(start_year=int(data["high_state"]["arrival_year"]))
+            )
+            VariablesConstantsBot.BOT.set_state(
+                user_id=message.from_user.id,
+                state=LowState.departure_year
+            )
+
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.departure_month)
+def state_low_departure_month(message: object) -> None:
+    """
+    Функция состояния диалога с ботом по команде low
+    Производит запись месяца выезда из номера
+
+    Parameters:
+    message (object): class 'telebot.types.Message'
+
+    Returns:
+    None
+    """
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        if message.text.capitalize() in VariablesMutableBot.list_month:
+            data["low_state"]["departure_month"] = VariablesConstantsBot.DICT_MOUNT_STR_INT[message.text.capitalize()]
+            if (int(data["low_state"]["arrival_year"]) == int(data["low_state"]["departure_year"]) and
+                    int(data["low_state"]["arrival_month"]) == int(data["low_state"]["departure_month"])):
+                VariablesConstantsBot.BOT.send_message(
+                    chat_id=message.chat.id,
+                    text="Выезд. Выберите день:",
+                    reply_markup=KeyboardsBot.keyboard_day(
+                        year=int(data["low_state"]["departure_year"]),
+                        month=int(data["low_state"]["departure_month"]),
+                        start_day=int(data["low_state"]["arrival_day"])
+                    )
+                )
+            else:
+                VariablesConstantsBot.BOT.send_message(
+                    chat_id=message.chat.id,
+                    text="Выезд. Выберите день:",
+                    reply_markup=KeyboardsBot.keyboard_day(
                         year=int(data["low_state"]["arrival_year"]),
                         month=int(data["low_state"]["arrival_month"])
                     )
                 )
-                VariablesConstants.BOT.set_state(
-                    user_id=message.from_user.id,
-                    state=LowState.arrival_day
-                )
-
-@VariablesConstants.BOT.message_handler(state=LowState.departure_year)
-def state_low_departure_year(message: object) -> None:
-    """
-    Function description:
-    Функция состояния диалога с ботом по команде low
-    Производит запись года выезда из номера
-
-    Arguments:
-    message (object): class 'telebot.types.Message'
-
-    Returns:
-    None
-    """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    else:
-        with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            if message.text in VariablesMutable.list_year:
-                data["low_state"]["departure_year"] = int(message.text)
-                if not data["low_state"]["arrival_year"] == data["low_state"]["departure_year"]:
-                    VariablesConstants.BOT.send_message(
-                        chat_id=message.chat.id,
-                        text="Выезд. Выберите месяц:",
-                        reply_markup=Keyboards.keyboard_month()
-                    )
-                else:
-                    VariablesConstants.BOT.send_message(
-                        chat_id=message.chat.id,
-                        text="Выезд. Выберите месяц:",
-                        reply_markup=Keyboards.keyboard_month(start_month=int(data["low_state"]["arrival_month"]))
-                    )
-                VariablesConstants.BOT.set_state(
-                    user_id=message.from_user.id,
-                    state=LowState.departure_month
-                )
-            else:
-                VariablesConstants.BOT.send_message(
+            VariablesConstantsBot.BOT.set_state(
+                user_id=message.from_user.id,
+                state=LowState.departure_day
+            )
+        else:
+            if data["low_state"]["arrival_year"] == data["low_state"]["departure_year"]:
+                VariablesConstantsBot.BOT.send_message(
                     chat_id=message.chat.id,
-                    text="Неверный ввод.\nВыезд. Выберите год предложенный ниже:",
-                    reply_markup=Keyboards.keyboard_year(start_year=int(data["high_state"]["arrival_year"]))
-                )
-                VariablesConstants.BOT.set_state(
-                    user_id=message.from_user.id,
-                    state=LowState.departure_year
-                )
-
-@VariablesConstants.BOT.message_handler(state=LowState.departure_month)
-def state_low_departure_month(message: object) -> None:
-    """
-    Function description:
-    Функция состояния диалога с ботом по команде low
-    Производит запись месяца выезда из номера
-
-    Arguments:
-    message (object): class 'telebot.types.Message'
-
-    Returns:
-    None
-    """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    else:
-        with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            if message.text.capitalize() in VariablesMutable.list_month:
-                data["low_state"]["departure_month"] = VariablesConstants.DICT_MOUNT_STR_INT[message.text.capitalize()]
-                if (int(data["low_state"]["arrival_year"]) == int(data["low_state"]["departure_year"]) and
-                    int(data["low_state"]["arrival_month"]) == int(data["low_state"]["departure_month"])):
-                    VariablesConstants.BOT.send_message(
-                        chat_id=message.chat.id,
-                        text="Выезд. Выберите день:",
-                        reply_markup=Keyboards.keyboard_day(
-                            year=int(data["low_state"]["departure_year"]),
-                            month=int(data["low_state"]["departure_month"]),
-                            start_day=int(data["low_state"]["arrival_day"])
-                        )
-                    )
-                else:
-                    VariablesConstants.BOT.send_message(
-                        chat_id=message.chat.id,
-                        text="Выезд. Выберите день:",
-                        reply_markup=Keyboards.keyboard_day(
-                            year=int(data["low_state"]["arrival_year"]),
-                            month=int(data["low_state"]["arrival_month"])
-                        )
-                    )
-                VariablesConstants.BOT.set_state(
-                    user_id=message.from_user.id,
-                    state=LowState.departure_day
+                    text="Неверный ввод.\n"
+                         "Выезд. Выберите месяц предложенный ниже:",
+                    reply_markup=KeyboardsBot.keyboard_month(start_month=int(data["low_state"]["arrival_month"]))
                 )
             else:
-                if not data["low_state"]["arrival_year"] == data["low_state"]["departure_year"]:
-                    VariablesConstants.BOT.send_message(
-                        chat_id=message.chat.id,
-                        text="Неверный ввод.\nВыезд. Выберите месяц предложенный ниже:",
-                        reply_markup=Keyboards.keyboard_month()
-                    )
-                else:
-                    VariablesConstants.BOT.send_message(
-                        chat_id=message.chat.id,
-                        text="Неверный ввод.\nВыезд. Выберите месяц предложенный ниже:",
-                        reply_markup=Keyboards.keyboard_month(start_month=int(data["low_state"]["arrival_month"]))
-                    )
-                VariablesConstants.BOT.set_state(
-                    user_id=message.from_user.id,
-                    state=LowState.departure_month
+                VariablesConstantsBot.BOT.send_message(
+                    chat_id=message.chat.id,
+                    text="Неверный ввод.\n"
+                         "Выезд. Выберите месяц предложенный ниже:",
+                    reply_markup=KeyboardsBot.keyboard_month()
                 )
+            VariablesConstantsBot.BOT.set_state(
+                user_id=message.from_user.id,
+                state=LowState.departure_month
+            )
 
-@VariablesConstants.BOT.message_handler(state=LowState.departure_day)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.departure_day)
 def state_low_departure_day(message: object) -> None:
     """
-    Function description:
     Функция состояния диалога с ботом по команде low
     Производит запись дня выезда из номера
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    else:
-        with (VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data):
-            if message.text in VariablesMutable.list_days:
-                data["low_state"]["departure_day"] = int(message.text)
-                VariablesConstants.BOT.send_message(
-                    chat_id=message.from_user.id,
-                    text="Количество номеров:",
-                    reply_markup=ReplyKeyboardRemove()
-                )
-                VariablesConstants.BOT.set_state(
-                    user_id=message.from_user.id,
-                    state=LowState.room_count
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    with (VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data):
+        if message.text in VariablesMutableBot.list_days:
+            data["low_state"]["departure_day"] = int(message.text)
+            VariablesConstantsBot.BOT.send_message(
+                chat_id=message.from_user.id,
+                text="Количество номеров:",
+                reply_markup=ReplyKeyboardRemove()
+            )
+            VariablesConstantsBot.BOT.set_state(
+                user_id=message.from_user.id,
+                state=LowState.room_count
+            )
+        else:
+            if (int(data["low_state"]["arrival_year"]) == int(data["low_state"]["departure_year"]) and
+                    int(data["low_state"]["arrival_month"]) == int(data["low_state"]["departure_month"])):
+                VariablesConstantsBot.BOT.send_message(
+                    chat_id=message.chat.id,
+                    text="Неверный ввод.\n"
+                         "Выезд. Выберите день предложенный ниже:",
+                    reply_markup=KeyboardsBot.keyboard_day(
+                        year=int(data["low_state"]["departure_year"]),
+                        month=int(data["low_state"]["departure_month"]),
+                        start_day=int(data["low_state"]["arrival_day"])
+                    )
                 )
             else:
-                if (int(data["low_state"]["arrival_year"]) == int(data["low_state"]["departure_year"]) and
-                    int(data["low_state"]["arrival_month"]) == int(data["low_state"]["departure_month"])):
-                    VariablesConstants.BOT.send_message(
-                        chat_id=message.chat.id,
-                        text="Неверный ввод.\nВыезд. Выберите день предложенный ниже:",
-                        reply_markup=Keyboards.keyboard_day(
-                            year=int(data["low_state"]["departure_year"]),
-                            month=int(data["low_state"]["departure_month"]),
-                            start_day=int(data["low_state"]["arrival_day"])
-                        )
+                VariablesConstantsBot.BOT.send_message(
+                    chat_id=message.chat.id,
+                    text="Неверный ввод.\n"
+                         "Выезд. Выберите день предложенный ниже:",
+                    reply_markup=KeyboardsBot.keyboard_day(
+                        year=int(data["low_state"]["arrival_year"]),
+                        month=int(data["low_state"]["arrival_month"])
                     )
-                else:
-                    VariablesConstants.BOT.send_message(
-                        chat_id=message.chat.id,
-                        text="Неверный ввод.\nВыезд. Выберите день предложенный ниже:",
-                        reply_markup=Keyboards.keyboard_day(
-                            year=int(data["low_state"]["arrival_year"]),
-                            month=int(data["low_state"]["arrival_month"])
-                        )
-                    )
-                VariablesConstants.BOT.set_state(
-                    user_id=message.from_user.id,
-                    state=LowState.departure_day
                 )
+            VariablesConstantsBot.BOT.set_state(
+                user_id=message.from_user.id,
+                state=LowState.departure_day
+            )
 
-@VariablesConstants.BOT.message_handler(state=LowState.room_count)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.room_count)
 def state_low_room_count(message: object) -> None:
     """
-    Function description:
     Функция состояния диалога с ботом по команде low
     Запоминает количество арендуемых номеров
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    elif message.text.isdigit() and int(message.text) >= 1:
-        VariablesMutable.count_room = int(message.text)
-        VariablesMutable.count_room_flag += 1
-        VariablesConstants.BOT.send_message(
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    if message.text.isdigit() and int(message.text) >= 1:
+        VariablesMutableBot.count_room = int(message.text)
+        VariablesMutableBot.count_room_flag += 1
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.from_user.id,
-            text=f"Количество взрослых в {VariablesMutable.count_room_flag}-ом номере:",
+            text=f"Количество взрослых в {VariablesMutableBot.count_room_flag}-ом номере:",
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.adults_count
         )
     else:
-        VariablesConstants.BOT.send_message(
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.from_user.id,
-            text="Неверный ввод.\nВведите количество номеров в положительном числовом выражении:",
+            text="Неверный ввод.\n"
+                 "Введите количество номеров в положительном числовом выражении:",
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.room_count
         )
 
-@VariablesConstants.BOT.message_handler(state=LowState.adults_count)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.adults_count)
 def state_low_adults_count(message: object) -> None:
     """
-    Function description:
     Функция состояния диалога с ботом по команде low
     Производит запись о количестве проживающих в номере
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    elif message.text.isdigit() and int(message.text) >= 1:
-        with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            if not "adults" in data["low_state"]:
-                data["low_state"]["adults"] = [int(message.text)]
-            else:
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    if message.text.isdigit() and int(message.text) >= 1:
+        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+            if "adults" in data["low_state"]:
                 data["low_state"]["adults"].append(int(message.text))
-        VariablesConstants.BOT.send_message(
+            else:
+                data["low_state"]["adults"] = [int(message.text)]
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.from_user.id,
-            text=f"Количество детей в {VariablesMutable.count_room_flag}-ом номере:",
+            text=f"Количество детей в {VariablesMutableBot.count_room_flag}-ом номере:",
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.children_count
         )
     else:
-        VariablesConstants.BOT.send_message(
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.from_user.id,
-            text="Неверный ввод.\nВведите количество взрослых в положительном числовом выражении:",
+            text="Неверный ввод.\n"
+                 "Введите количество взрослых в положительном числовом выражении:",
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.adults_count
         )
 
-@VariablesConstants.BOT.message_handler(state=LowState.children_count)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.children_count)
 def state_low_children_count(message: object) -> None:
     """
-    Function description:
     Функция состояния диалога с ботом по команде low
     Запоминает количество детей и производит запись о детях если понадобится
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    elif message.text.isdigit() and int(message.text) >= 0:
-        VariablesMutable.count_children = int(message.text)
-        if not VariablesMutable.count_children == 0:
-            VariablesMutable.count_children_flag += 1
-            VariablesConstants.BOT.send_message(
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    if message.text.isdigit() and int(message.text) >= 0:
+        VariablesMutableBot.count_children = int(message.text)
+        if not VariablesMutableBot.count_children == 0:
+            VariablesMutableBot.count_children_flag += 1
+            VariablesConstantsBot.BOT.send_message(
                 chat_id=message.from_user.id,
-                text=f"Возраст {VariablesMutable.count_children_flag}-ого ребенка:",
+                text=f"Возраст {VariablesMutableBot.count_children_flag}-ого ребенка:",
             )
-            VariablesConstants.BOT.set_state(
+            VariablesConstantsBot.BOT.set_state(
                 user_id=message.from_user.id,
                 state=LowState.children_age
             )
-        elif not VariablesMutable.count_room == VariablesMutable.count_room_flag:
-            with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-                if not "children_age" in data["low_state"]:
-                    data["low_state"]["children_age"] = [[]]
-                else:
+        elif not VariablesMutableBot.count_room == VariablesMutableBot.count_room_flag:
+            with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+                if "children_age" in data["low_state"]:
                     data["low_state"]["children_age"].append([])
-            VariablesMutable.count_room_flag += 1
-            VariablesConstants.BOT.send_message(
+                else:
+                    data["low_state"]["children_age"] = [[]]
+            VariablesMutableBot.count_room_flag += 1
+            VariablesConstantsBot.BOT.send_message(
                 chat_id=message.from_user.id,
-                text=f"Количество взрослых в {VariablesMutable.count_room_flag}-ом номере:",
+                text=f"Количество взрослых в {VariablesMutableBot.count_room_flag}-ом номере:",
             )
-            VariablesConstants.BOT.set_state(
+            VariablesConstantsBot.BOT.set_state(
                 user_id=message.from_user.id,
                 state=LowState.adults_count
             )
         else:
-            with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-                data["low_state"]["children_age"].append([])
-            VariablesConstants.BOT.send_message(
+            with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+                if "children_age" in data["low_state"]:
+                    data["low_state"]["children_age"].append([])
+                else:
+                    data["low_state"]["children_age"] = [[]]
+            VariablesConstantsBot.BOT.send_message(
                 chat_id=message.chat.id,
-                text="По какой категории отсортировать лучшие показатели:",
-                reply_markup=Keyboards.keyboard_sort())
-            VariablesConstants.BOT.set_state(
+                text="По какой категории отсортировать худшие показатели:",
+                reply_markup=KeyboardsBot.keyboard_sort()
+            )
+            VariablesConstantsBot.BOT.set_state(
                 user_id=message.from_user.id,
                 state=LowState.sort
             )
     else:
-        VariablesConstants.BOT.send_message(
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.from_user.id,
-            text="Неверный ввод.\nВведите количество детей в положительном числовом выражении:",
+            text="Неверный ввод.\n"
+                 "Введите количество детей в положительном числовом выражении:",
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.children_count
         )
 
-@VariablesConstants.BOT.message_handler(state=LowState.children_age)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.children_age)
 def state_low_children_age(message: object) -> None:
     """
-    Function description:
     Функция состояния диалога с ботом по команде low
     Записывает возраст детей
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    elif message.text.isdigit() and  0 < int(message.text) < 18:
-        with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            if not "children_age" in data["low_state"]:
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    if message.text.isdigit() and 0 < int(message.text) < 18:
+        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+            if "children_age" not in data["low_state"]:
                 data["low_state"]["children_age"] = [[int(message.text)]]
-            elif len(data["low_state"]["children_age"]) == VariablesMutable.count_room_flag:
-                data["low_state"]["children_age"][VariablesMutable.count_room_flag - 1].append(int(message.text))
+            elif len(data["low_state"]["children_age"]) == VariablesMutableBot.count_room_flag:
+                data["low_state"]["children_age"][VariablesMutableBot.count_room_flag - 1].append(int(message.text))
             else:
                 data["low_state"]["children_age"].append([int(message.text)])
-        if not VariablesMutable.count_children == VariablesMutable.count_children_flag:
-            VariablesMutable.count_children_flag += 1
-            VariablesConstants.BOT.send_message(
+        if not VariablesMutableBot.count_children == VariablesMutableBot.count_children_flag:
+            VariablesMutableBot.count_children_flag += 1
+            VariablesConstantsBot.BOT.send_message(
                 chat_id=message.from_user.id,
-                text=f"Возраст {VariablesMutable.count_children_flag}-ого ребенка:",
+                text=f"Возраст {VariablesMutableBot.count_children_flag}-ого ребенка:",
             )
-            VariablesConstants.BOT.set_state(
+            VariablesConstantsBot.BOT.set_state(
                 user_id=message.from_user.id,
                 state=LowState.children_age
             )
-        elif not VariablesMutable.count_room == VariablesMutable.count_room_flag:
-            VariablesMutable.count_children = 0
-            VariablesMutable.count_children_flag = 0
-            VariablesMutable.count_room_flag += 1
-            VariablesConstants.BOT.send_message(
+        elif not VariablesMutableBot.count_room == VariablesMutableBot.count_room_flag:
+            VariablesMutableBot.count_children = 0
+            VariablesMutableBot.count_children_flag = 0
+            VariablesMutableBot.count_room_flag += 1
+            VariablesConstantsBot.BOT.send_message(
                 chat_id=message.from_user.id,
-                text=f"Количество взрослых в {VariablesMutable.count_room_flag}-ом номере:",
+                text=f"Количество взрослых в {VariablesMutableBot.count_room_flag}-ом номере:",
             )
-            VariablesConstants.BOT.set_state(
+            VariablesConstantsBot.BOT.set_state(
                 user_id=message.from_user.id,
                 state=LowState.adults_count
             )
         else:
-            VariablesConstants.BOT.send_message(
+            VariablesConstantsBot.BOT.send_message(
                 chat_id=message.chat.id,
-                text="По какой категории отсортировать лучшие показатели:",
-                reply_markup=Keyboards.keyboard_sort())
-            VariablesConstants.BOT.set_state(
+                text="По какой категории отсортировать худшие показатели:",
+                reply_markup=KeyboardsBot.keyboard_sort()
+            )
+            VariablesConstantsBot.BOT.set_state(
                 user_id=message.from_user.id,
                 state=LowState.sort
             )
     else:
-        VariablesConstants.BOT.send_message(
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.from_user.id,
             text="Неверный ввод.\n"
                  "Введите возраст ребёнка в положительном числовом выражении\n"
                  "Так же возраст ребенка должен быть в диапазоне от 1 до 18 лет:",
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.children_age
         )
 
-@VariablesConstants.BOT.message_handler(state=LowState.sort)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.sort)
 def state_low_sort(message: object) -> None:
     """
-    Function description:
     Функция состояния диалога с ботом по команде low
     Производит запись выбранной сортировки
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    elif message.text in VariablesConstants.DICT_SORT_API_HOSTEL:
-        VariablesConstants.BOT.send_message(
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    if message.text in VariablesConstantsBot.DICT_SORT_API_HOSTEL:
+        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+            data["low_state"]["sort"] = VariablesConstantsBot.DICT_SORT_API_HOSTEL[message.text]
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.chat.id,
-            text="Количество которое необходимо вывести:",
+            text="Количество не больше 20, которое необходимо вывести:",
             reply_markup=ReplyKeyboardRemove()
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.count
         )
-        with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            data["low_state"]["sort"] = VariablesConstants.DICT_SORT_API_HOSTEL[message.text]
     else:
-        VariablesConstants.BOT.send_message(
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.chat.id,
-            text="Неверный ввод.\nВыберите один из вариантов предложенных ниже:",
-            reply_markup=Keyboards.keyboard_sort()
+            text="Неверный ввод.\n"
+                 "Выберите один из вариантов предложенных ниже:",
+            reply_markup=KeyboardsBot.keyboard_sort()
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.sort
         )
 
-@VariablesConstants.BOT.message_handler(state=LowState.count)
+
+@VariablesConstantsBot.BOT.message_handler(state=LowState.count)
 def state_low_count(message: object) -> None:
     """
-    Function description:
     Функция завершения состояния диалога с ботом по команде low
-    Производит запись количества выводимых результатов
+    Выводит пользователю результаты по его запросу
 
-    Arguments:
+    Parameters:
     message (object): class 'telebot.types.Message'
 
     Returns:
     None
     """
-    if message.text in VariablesConstants.COMMANDS:
-        Functions.conversation_transition(message)
-    elif message.text.isdigit():
-        with VariablesConstants.BOT.retrieve_data(user_id=message.from_user.id) as data:
+    if message.text in VariablesConstantsBot.COMMANDS:
+        FunctionsBot.conversation_transition(message)
+        return
+    if message.text.isdigit() and 0 < int(message.text) <= 20:
+        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
             data["low_state"]["count"] = message.text
-        VariablesConstants.BOT.send_message(
-            chat_id=message.chat.id,
-            text=f"{data}"
-        )
-        VariablesConstants.BOT.delete_state(
-            user_id=message.from_user.id
+        hotels_api = LowApi.low_result(dict_result=data['low_state'])
+        for numb_count in range(int(data["low_state"]["count"])):
+            text = (
+                f"{hotels_api[numb_count]['name_hotels']}\n"
+                f"{hotels_api[numb_count]['sort_element']}\n"
+                f"{hotels_api[numb_count]['url']}"
+            )
+            if hotels_api[numb_count]["number_photo"] > 0:
+                photo_list = [
+                    telebot.types.InputMediaPhoto(media=hotels_api[numb_count][f"photo_{i}"], caption=text)
+                    if i == 0
+                    else telebot.types.InputMediaPhoto(media=hotels_api[numb_count][f"photo_{i}"])
+                    for i in range(hotels_api[numb_count]["number_photo"])
+                ]
+            else:
+                no_photo = open("../python_basic_diploma/config_data/no_photo.jpg", "rb")
+                photo_list = [telebot.types.InputMediaPhoto(media=no_photo, caption=text)]
+            VariablesConstantsBot.BOT.send_media_group(
+                chat_id=message.chat.id,
+                media=photo_list
+            )
+        VariablesConstantsBot.BOT.delete_state(
+            user_id=message.from_user.id,
+            chat_id=message.chat.id
         )
     else:
-        VariablesConstants.BOT.send_message(
+        VariablesConstantsBot.BOT.send_message(
             chat_id=message.chat.id,
-            text="Неверный ввод.\nЯ хочу получить положительное число:"
+            text="Неверный ввод.\n"
+                 "Я хочу получить положительное число от 1 до 20:"
         )
-        VariablesConstants.BOT.set_state(
+        VariablesConstantsBot.BOT.set_state(
             user_id=message.from_user.id,
             state=LowState.count
         )
 
-VariablesConstants.BOT.add_custom_filter(telebot.custom_filters.StateFilter(VariablesConstants.BOT))
+
+VariablesConstantsBot.BOT.add_custom_filter(telebot.custom_filters.StateFilter(VariablesConstantsBot.BOT))

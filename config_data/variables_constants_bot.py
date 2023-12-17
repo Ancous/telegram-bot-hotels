@@ -1,14 +1,17 @@
+"""
+Модуль с постоянными(неизменяемыми) переменными в работе бота
+"""
+
 import os
 import telebot
 
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
-class VariablesConstants:
+
+class VariablesConstantsBot:
     """
-    Class description:
     Класс для хранения постоянных переменных
 
     Attributes:
@@ -16,7 +19,8 @@ class VariablesConstants:
     DB_PATH (str): название базы данных
     COMMANDS (tuple): кортеж с командами бота
     DESCRIPTION_COMMANDS (str): описание команд бота
-    DICT_SORT_API_HOSTEL (dict): словарь для вывода пользователю возможной сортировки и перевода значений сортировки для API
+    DICT_SORT_API_HOSTEL (dict): словарь для вывода пользователю возможной сортировки и перевода значений сортировки
+                                 для работы с API-Hotels.com
     DICT_MOUNT_STR_INT (dict): словарь для перевода строкового значения месяца в числовое значение
     """
     BOT = telebot.TeleBot(os.getenv("TOKEN_BOT"))
@@ -25,17 +29,16 @@ class VariablesConstants:
     DESCRIPTION_COMMANDS = (
         "/start............начало диалога с ботом\n"
         "/help.............информация по кнопкам и командам\n"
-        "/low...............вывод худших показателей\n"
         "/high.............вывод лучших показателей\n"
+        "/low...............вывод худших показателей\n"
         "/custom.......вывод показателей пользовательского диапазона\n"
-        "/history........вывод истории запросов пользователей"
+        "/history........вывод истории запросов"
     )
     DICT_SORT_API_HOSTEL = {
         "Сортировка по ценам": "PRICE_LOW_TO_HIGH",
         "Сортировка по оценкам проживающих": "REVIEW",
-        "Сортировка по расстоянию от центра": "DISTANCE",
+        "Сортировка по расстоянию до центра": "DISTANCE",
         "Сортировка по звездности отелей": "PROPERTY_CLASS",
-        "Сортировка по количеству отзывов проживающих": "RECOMMENDED"
     }
     DICT_MOUNT_STR_INT = {
         "Январь": 1, "Февраль": 2, "Март": 3, "Апрель": 4,

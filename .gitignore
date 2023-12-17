@@ -1,4 +1,6 @@
 .env
-.idea
-__pycache__
 UserDatabase.db
+venv/
+.idea/
+__pycache__/
+setup.cfg
