@@ -3,7 +3,7 @@
 """
 
 from hotels_api import RequrestsApi
-from translator_rus_eng import translator
+# from translator_rus_eng import translator
 
 
 def checking_city_country_recording_city_id(dict_result: dict) -> (bool, int):
@@ -16,8 +16,10 @@ def checking_city_country_recording_city_id(dict_result: dict) -> (bool, int):
     Returns:
     bool, int: id города для поиска
     """
-    city = translator(dict_result["city"])
-    country = translator(dict_result["country"])
+    # city = translator(dict_result["city"])
+    # country = translator(dict_result["country"])
+    city = dict_result["city"]
+    country = dict_result["country"]
     id_city = None
     response_1 = RequrestsApi.get_locations_suggestions(
         city=city,

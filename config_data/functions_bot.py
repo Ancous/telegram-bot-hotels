@@ -178,5 +178,5 @@ class FunctionsBot:
             handlers.handlers_command_low.state_low_start(message)
         if message.text == "/custom":
             handlers.handlers_command_custom.state_custom_start(message)
-        # if message.text == "/history":
-        #     history(message)
+        if message.text == "/history":
+            handlers.handlers_command_history.history(message)

@@ -7,6 +7,7 @@ from telebot.types import ReplyKeyboardRemove
 from datetime import datetime
 
 from config_data import VariablesMutableBot, VariablesConstantsBot, FunctionsBot
+from database import create_request_db, create_response_db
 from hotels_api import checking_city_country_recording_city_id, CustomApi
 from keyboards import KeyboardsBot
 from states import CustomState
@@ -568,7 +569,7 @@ def state_custom_children_age(message) -> None:
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
         return
-    if message.text.isdigit() and 0 < int(message.text) < 18:
+    if message.text.isdigit() and int(message.text) in range(1, 19):
         with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
             if "children_age" not in data["custom_state"]:
                 data["custom_state"]["children_age"] = [[int(message.text)]]
@@ -710,7 +711,7 @@ def state_custom_range_price(message) -> None:
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
     else:
-        if message.text.replace('.', '', 1).isdigit() and 0 <= float(message.text) < 15000:
+        if message.text.replace('.', '', 1).isdigit() and 0 <= float(message.text) <= 15000:
             with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
                 if "range_min" in data["custom_state"]:
                     if float(message.text) < data["custom_state"]["range_min"]:
@@ -830,7 +831,7 @@ def state_custom_range_distance(message) -> None:
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
     else:
-        if message.text.replace('.', '', 1).isdigit() and 0 <= float(message.text) <= 10:
+        if message.text.replace('.', '', 1).isdigit() and 0 <= float(message.text) <= 15:
             with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
                 if "range_min" in data["custom_state"]:
                     if float(message.text) < data["custom_state"]["range_min"]:
@@ -890,7 +891,7 @@ def state_custom_range_star(message) -> None:
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
     else:
-        if message.text.replace('.', '', 1).isdigit() and 0 <= int(message.text) <= 10:
+        if message.text.replace('.', '', 1).isdigit() and 0 <= int(message.text) <= 5:
             with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
                 if "range_min" in data["custom_state"]:
                     if int(message.text) < data["custom_state"]["range_min"]:
@@ -950,9 +951,14 @@ def state_custom_count(message) -> None:
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
         return
-    if message.text.isdigit() and 0 < int(message.text) <= 20:
-        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            data["custom_state"]["count"] = message.text
+    with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        data["custom_state"]["count"] = message.text
+    create_request_db(
+        message=message,
+        dict_result=data["custom_state"],
+        command=list(data.keys())[0]
+    )
+    if message.text.isdigit() and int(message.text) in range(1, 21):
         hotels_api = CustomApi.custom_result(dict_result=data['custom_state'])
         if len(hotels_api) == 0:
             VariablesConstantsBot.BOT.send_message(
@@ -980,6 +986,9 @@ def state_custom_count(message) -> None:
                     chat_id=message.chat.id,
                     media=photo_list
                 )
+        create_response_db(
+            list_result=hotels_api
+        )
         VariablesConstantsBot.BOT.delete_state(
             user_id=message.from_user.id,
             chat_id=message.chat.id
