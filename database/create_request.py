@@ -1,5 +1,5 @@
 """
-Запись запроса поиска в базу данных
+Модуль записи запроса поиска в базу данных
 """
 
 from datetime import datetime
@@ -54,7 +54,7 @@ def create_request_db(message: object, dict_result: dict, command: str) -> None:
         Country=dict_result["country"].capitalize(),
         City=dict_result["city"].capitalize(),
         Arrival_date=arrival_date,
-        Departure_month=departure_date,
+        Departure_date=departure_date,
         Count_rooms=VariablesMutableBot.count_room,
         Count_adults=sum(dict_result["adults"]),
         Count_children=len(sum(dict_result["children_age"], []))
