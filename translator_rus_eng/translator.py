@@ -63,4 +63,7 @@ def translator(word_s: str) -> str:
         "X-RapidAPI-Host": rapidapi_host
     }
     response_1 = requests.post(url=url_translator, data=payload_1, headers=headers_1)
-    return response_1.json()["data"]["translations"][0]["translatedText"]
+    if response_1.status_code == 200:
+        return response_1.json()["data"]["translations"][0]["translatedText"]
+    else:
+        return "Error"

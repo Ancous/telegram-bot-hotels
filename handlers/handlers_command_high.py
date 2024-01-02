@@ -3,6 +3,7 @@
 """
 
 import telebot
+
 from telebot.types import ReplyKeyboardRemove
 from datetime import datetime
 
@@ -36,6 +37,7 @@ def state_high_start(message: object) -> None:
         state=HighState.country
     )
     with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        data.clear()
         data["high_state"] = {}
 
 
@@ -574,7 +576,7 @@ def state_high_children_age(message: object) -> None:
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
         return
-    if message.text.isdigit() and int(message.text) in range(1, 19):
+    if message.text.isdigit() and int(message.text) in range(1, 18):
         with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
             if "children_age" not in data["high_state"]:
                 data["high_state"]["children_age"] = [[int(message.text)]]
@@ -684,12 +686,12 @@ def state_high_count(message: object) -> None:
         return
     with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
         data["high_state"]["count"] = message.text
-    create_request_db(
-        message=message,
-        dict_result=data["high_state"],
-        command=list(data.keys())[0]
-    )
     if message.text.isdigit() and int(message.text) in range(1, 21):
+        create_request_db(
+            message=message,
+            dict_result=data["high_state"],
+            command=list(data.keys())[0]
+        )
         hotels_api = HighApi.high_result(dict_result=data['high_state'])
         if len(hotels_api) == 0:
             VariablesConstantsBot.BOT.send_message(

@@ -67,9 +67,9 @@ class RequrestsApi:
         }
 
         response = requests.get(url=url, params=parameters, headers=headers)
-        result = response.json()
 
         if response.status_code == 200:
+            result = response.json()
             return {"status_code": response.status_code, "headers": response.headers, "result": result}
         else:
             return {"status_code": response.status_code, "headers": response.headers}
@@ -258,9 +258,9 @@ class RequrestsApi:
         }
 
         response = requests.post(url=url, json=payload, headers=headers)
-        result = response.json()
 
         if response.status_code == 200:
+            result = response.json()
             return {"status_code": response.status_code, "headers": response.headers, "result": result}
         else:
             return {"status_code": response.status_code, "headers": response.headers}
@@ -312,9 +312,9 @@ class RequrestsApi:
         }
 
         response = requests.post(url=url, json=payload, headers=headers)
-        result = response.json()
 
         if response.status_code == 200:
+            result = response.json()
             return {"status_code": response.status_code, "headers": response.headers, "result": result}
         else:
             return {"status_code": response.status_code, "headers": response.headers}

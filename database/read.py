@@ -30,6 +30,7 @@ def read_db(message: object) -> dict:
 
     for elem in table_data:
         if len(dict_data) > 10:
+            dict_data.pop(str(elem.Request_id.id))
             break
         if not count_request == elem.Request_id.id:
             count_response = 1

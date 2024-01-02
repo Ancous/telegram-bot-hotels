@@ -3,6 +3,7 @@
 """
 
 import telebot
+
 from telebot.types import ReplyKeyboardRemove
 from datetime import datetime
 
@@ -36,6 +37,7 @@ def state_custom_start(message) -> None:
         state=CustomState.country
     )
     with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        data.clear()
         data["custom_state"] = {}
 
 
@@ -569,7 +571,7 @@ def state_custom_children_age(message) -> None:
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
         return
-    if message.text.isdigit() and int(message.text) in range(1, 19):
+    if message.text.isdigit() and int(message.text) in range(1, 18):
         with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
             if "children_age" not in data["custom_state"]:
                 data["custom_state"]["children_age"] = [[int(message.text)]]
@@ -891,7 +893,7 @@ def state_custom_range_star(message) -> None:
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
     else:
-        if message.text.replace('.', '', 1).isdigit() and 0 <= int(message.text) <= 5:
+        if message.text.isdigit() and 0 <= int(float(message.text)) <= 5:
             with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
                 if "range_min" in data["custom_state"]:
                     if int(message.text) < data["custom_state"]["range_min"]:
@@ -953,12 +955,12 @@ def state_custom_count(message) -> None:
         return
     with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
         data["custom_state"]["count"] = message.text
-    create_request_db(
-        message=message,
-        dict_result=data["custom_state"],
-        command=list(data.keys())[0]
-    )
     if message.text.isdigit() and int(message.text) in range(1, 21):
+        create_request_db(
+            message=message,
+            dict_result=data["custom_state"],
+            command=list(data.keys())[0]
+        )
         hotels_api = CustomApi.custom_result(dict_result=data['custom_state'])
         if len(hotels_api) == 0:
             VariablesConstantsBot.BOT.send_message(

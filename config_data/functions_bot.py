@@ -145,7 +145,7 @@ class FunctionsBot:
             if VariablesMutableBot.year and VariablesMutableBot.month:
                 new_list_days = list()
                 flag = False
-                for day in range(days):
+                for day in range(days + 1):
                     if day == datetime.now().day:
                         flag = True
                     if flag:
