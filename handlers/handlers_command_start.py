@@ -4,7 +4,7 @@
 
 from config_data import FunctionsBot
 from config_data import VariablesConstantsBot
-from database.main_database import User
+from database import create_user_db
 from keyboards import KeyboardsBot
 
 
@@ -20,13 +20,7 @@ def start(message: object) -> None:
     Returns:
     None
     """
-    user_id = message.from_user.id
-    query = User.select().where(User.user_id == user_id)
-    if not query.exists():
-        User.create(
-            user_id=message.from_user.id,
-            name=message.from_user.first_name
-        )
+    create_user_db(message=message)
     VariablesConstantsBot.BOT.delete_state(
         user_id=message.from_user.id,
         chat_id=message.chat.id

@@ -78,11 +78,12 @@ class CustomApi:
                       "destinationInfo"]["distanceFromDestination"]["value"] > dict_result["range_max"]):
                 cls.custom_distance(dict_result=dict_result)
                 break
-            elif (dict_result["sort"] == "PROPERTY_CLASS" and
-                  cls.response["data"]["propertySearch"]["properties"][-1][
-                      "star"] < dict_result["range_min"]):
-                cls.custom_star(dict_result=dict_result)
-                break
+            elif dict_result["sort"] == "PROPERTY_CLASS":
+                if not isinstance(cls.response["data"]["propertySearch"]["properties"][-1]["star"], (int, float)):
+                    cls.response["data"]["propertySearch"]["properties"][-1]["star"] = 0
+                if cls.response["data"]["propertySearch"]["properties"][-1]["star"] < dict_result["range_min"]:
+                    cls.custom_star(dict_result=dict_result)
+                    break
 
         return cls.info_hotels_list
 

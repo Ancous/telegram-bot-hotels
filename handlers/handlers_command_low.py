@@ -3,10 +3,12 @@
 """
 
 import telebot
-from telebot.types import ReplyKeyboardRemove
+
 from datetime import datetime
+from telebot.types import ReplyKeyboardRemove
 
 from config_data import FunctionsBot, VariablesConstantsBot, VariablesMutableBot
+from database import create_request_db, create_response_db
 from hotels_api import checking_city_country_recording_city_id, LowApi
 from keyboards import KeyboardsBot
 from states import LowState
@@ -35,6 +37,7 @@ def state_low_start(message: object) -> None:
         state=LowState.country
     )
     with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        data.clear()
         data["low_state"] = {}
 
 
@@ -283,7 +286,7 @@ def state_low_departure_year(message: object) -> None:
                 chat_id=message.chat.id,
                 text="Неверный ввод.\n"
                      "Выезд. Выберите год предложенный ниже:",
-                reply_markup=KeyboardsBot.keyboard_year(start_year=int(data["high_state"]["arrival_year"]))
+                reply_markup=KeyboardsBot.keyboard_year(start_year=int(data["low_state"]["arrival_year"]))
             )
             VariablesConstantsBot.BOT.set_state(
                 user_id=message.from_user.id,
@@ -573,7 +576,7 @@ def state_low_children_age(message: object) -> None:
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
         return
-    if message.text.isdigit() and 0 < int(message.text) < 18:
+    if message.text.isdigit() and int(message.text) in range(1, 18):
         with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
             if "children_age" not in data["low_state"]:
                 data["low_state"]["children_age"] = [[int(message.text)]]
@@ -681,30 +684,44 @@ def state_low_count(message: object) -> None:
     if message.text in VariablesConstantsBot.COMMANDS:
         FunctionsBot.conversation_transition(message)
         return
-    if message.text.isdigit() and 0 < int(message.text) <= 20:
-        with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
-            data["low_state"]["count"] = message.text
+    with VariablesConstantsBot.BOT.retrieve_data(user_id=message.from_user.id) as data:
+        data["low_state"]["count"] = message.text
+    if message.text.isdigit() and int(message.text) in range(1, 21):
+        create_request_db(
+            message=message,
+            dict_result=data["low_state"],
+            command=list(data.keys())[0]
+        )
         hotels_api = LowApi.low_result(dict_result=data['low_state'])
-        for numb_count in range(int(data["low_state"]["count"])):
-            text = (
-                f"{hotels_api[numb_count]['name_hotels']}\n"
-                f"{hotels_api[numb_count]['sort_element']}\n"
-                f"{hotels_api[numb_count]['url']}"
-            )
-            if hotels_api[numb_count]["number_photo"] > 0:
-                photo_list = [
-                    telebot.types.InputMediaPhoto(media=hotels_api[numb_count][f"photo_{i}"], caption=text)
-                    if i == 0
-                    else telebot.types.InputMediaPhoto(media=hotels_api[numb_count][f"photo_{i}"])
-                    for i in range(hotels_api[numb_count]["number_photo"])
-                ]
-            else:
-                no_photo = open("../python_basic_diploma/config_data/no_photo.jpg", "rb")
-                photo_list = [telebot.types.InputMediaPhoto(media=no_photo, caption=text)]
-            VariablesConstantsBot.BOT.send_media_group(
+        if len(hotels_api) == 0:
+            VariablesConstantsBot.BOT.send_message(
                 chat_id=message.chat.id,
-                media=photo_list
+                text="По вашему запросу нет подходящих отелей."
             )
+        else:
+            for numb_count in range(len(hotels_api)):
+                text = (
+                    f"{hotels_api[numb_count]['name_hotels']}\n"
+                    f"{hotels_api[numb_count]['sort_element']}\n"
+                    f"{hotels_api[numb_count]['url']}"
+                )
+                if hotels_api[numb_count]["number_photo"] > 0:
+                    photo_list = [
+                        telebot.types.InputMediaPhoto(media=hotels_api[numb_count][f"photo_{i}"], caption=text)
+                        if i == 0
+                        else telebot.types.InputMediaPhoto(media=hotels_api[numb_count][f"photo_{i}"])
+                        for i in range(hotels_api[numb_count]["number_photo"])
+                    ]
+                else:
+                    no_photo = open("../python_basic_diploma/config_data/no_photo.jpg", "rb")
+                    photo_list = [telebot.types.InputMediaPhoto(media=no_photo, caption=text)]
+                VariablesConstantsBot.BOT.send_media_group(
+                    chat_id=message.chat.id,
+                    media=photo_list
+                )
+        create_response_db(
+            list_result=hotels_api
+        )
         VariablesConstantsBot.BOT.delete_state(
             user_id=message.from_user.id,
             chat_id=message.chat.id
