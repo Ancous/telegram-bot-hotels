@@ -26,7 +26,7 @@ class CustomApi:
     full_list_hotels = 0
 
     @classmethod
-    def custom_result(cls: object, dict_result: dict) -> list:
+    def custom_result(cls, dict_result: dict) -> list:
         """
         Делает запрос к API и распределяет выполнение работы по другим методам класса в зависимости от сортировки
 
@@ -88,7 +88,7 @@ class CustomApi:
         return cls.info_hotels_list
 
     @classmethod
-    def custom_price_low_to_high(cls: object, dict_result: dict) -> None:
+    def custom_price_low_to_high(cls, dict_result: dict) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по цене
 
@@ -131,7 +131,7 @@ class CustomApi:
                 break
 
     @classmethod
-    def custom_reviews(cls: object, dict_result: dict) -> None:
+    def custom_reviews(cls, dict_result: dict) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по рейтингу
 
@@ -171,7 +171,7 @@ class CustomApi:
                 break
 
     @classmethod
-    def custom_distance(cls: object, dict_result: dict) -> None:
+    def custom_distance(cls, dict_result: dict) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по расстоянию от центра
 
@@ -213,7 +213,7 @@ class CustomApi:
                 break
 
     @classmethod
-    def custom_star(cls: object, dict_result: dict) -> None:
+    def custom_star(cls, dict_result: dict) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по звездности отеля
 

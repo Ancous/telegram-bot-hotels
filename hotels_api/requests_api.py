@@ -28,7 +28,7 @@ class RequrestsApi:
     result = None
 
     @classmethod
-    def get_locations_suggestions(cls: object,
+    def get_locations_suggestions(cls,
                                   city: str,
                                   language_code: str = None,
                                   lang_id: int = None,
@@ -75,7 +75,7 @@ class RequrestsApi:
             return {"status_code": response.status_code, "headers": response.headers}
 
     @classmethod
-    def post_options_filters(cls: object,
+    def post_options_filters(cls,
                              region_id: str,
                              check_in_day: int,
                              check_in_month: int,
@@ -266,7 +266,7 @@ class RequrestsApi:
             return {"status_code": response.status_code, "headers": response.headers}
 
     @classmethod
-    def post_full_information_property(cls: object,
+    def post_full_information_property(cls,
                                        property_id: str,
                                        locale: str = None,
                                        site_id: int = None,

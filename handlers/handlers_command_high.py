@@ -4,18 +4,18 @@
 
 import telebot
 
-from telebot.types import ReplyKeyboardRemove
 from datetime import datetime
+from telebot.types import ReplyKeyboardRemove
 
-from config_data import FunctionsBot, VariablesConstantsBot, VariablesMutableBot
+from states import HighState
+from keyboards import KeyboardsBot
 from database import create_request_db, create_response_db
 from hotels_api import checking_city_country_recording_city_id, HighApi
-from keyboards import KeyboardsBot
-from states import HighState
+from config_data import FunctionsBot, VariablesConstantsBot, VariablesMutableBot
 
 
 @VariablesConstantsBot.BOT.message_handler(state="*", commands=["high"])
-def state_high_start(message: object) -> None:
+def state_high_start(message: telebot.types.Message) -> None:
     """
     Функция начального состояния диалога с ботом по команде high
     Обновляет все атрибуты класса VariablesMutable
@@ -42,7 +42,7 @@ def state_high_start(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.country)
-def state_high_country(message: object) -> None:
+def state_high_country(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Производит запись страны для поиска
@@ -69,7 +69,7 @@ def state_high_country(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.city)
-def state_high_city(message: object) -> None:
+def state_high_city(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Проверяет наличие id-города по запросу к hostel-api
@@ -115,7 +115,7 @@ def state_high_city(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.arrival_year)
-def state_high_arrival_year(message: object) -> None:
+def state_high_arrival_year(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Производит запись года заселения в номер
@@ -157,7 +157,7 @@ def state_high_arrival_year(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.arrival_month)
-def state_high_arrival_month(message: object) -> None:
+def state_high_arrival_month(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Производит запись месяца заселения в номер
@@ -202,7 +202,7 @@ def state_high_arrival_month(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.arrival_day)
-def state_high_arrival_day(message: object) -> None:
+def state_high_arrival_day(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Производит запись дня заселения в номер
@@ -248,7 +248,7 @@ def state_high_arrival_day(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.departure_year)
-def state_high_departure_year(message: object) -> None:
+def state_high_departure_year(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Производит запись года выезда из номера
@@ -295,7 +295,7 @@ def state_high_departure_year(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.departure_month)
-def state_high_departure_month(message: object) -> None:
+def state_high_departure_month(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Производит запись месяца выезда из номера
@@ -358,7 +358,7 @@ def state_high_departure_month(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.departure_day)
-def state_high_departure_day(message: object) -> None:
+def state_high_departure_day(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Производит запись дня выезда из номера
@@ -414,7 +414,7 @@ def state_high_departure_day(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.room_count)
-def state_high_room_count(message: object) -> None:
+def state_high_room_count(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Запоминает количество арендуемых номеров
@@ -452,7 +452,7 @@ def state_high_room_count(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.adults_count)
-def state_high_adults_count(message: object) -> None:
+def state_high_adults_count(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Производит запись о количестве проживающих в номере
@@ -493,7 +493,7 @@ def state_high_adults_count(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.children_count)
-def state_high_children_count(message: object) -> None:
+def state_high_children_count(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Запоминает количество детей и производит запись о детях если понадобится
@@ -562,7 +562,7 @@ def state_high_children_count(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.children_age)
-def state_high_children_age(message: object) -> None:
+def state_high_children_age(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Записывает возраст детей
@@ -630,7 +630,7 @@ def state_high_children_age(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.sort)
-def state_high_sort(message: object) -> None:
+def state_high_sort(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде high
     Производит запись выбранной сортировки
@@ -670,7 +670,7 @@ def state_high_sort(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=HighState.count)
-def state_high_count(message: object) -> None:
+def state_high_count(message: telebot.types.Message) -> None:
     """
     Функция завершения состояния диалога с ботом по команде high
     Производит запись количества выводимых результатов

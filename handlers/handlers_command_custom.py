@@ -4,18 +4,18 @@
 
 import telebot
 
-from telebot.types import ReplyKeyboardRemove
 from datetime import datetime
+from telebot.types import ReplyKeyboardRemove
 
-from config_data import VariablesMutableBot, VariablesConstantsBot, FunctionsBot
+from states import CustomState
+from keyboards import KeyboardsBot
 from database import create_request_db, create_response_db
 from hotels_api import checking_city_country_recording_city_id, CustomApi
-from keyboards import KeyboardsBot
-from states import CustomState
+from config_data import VariablesMutableBot, VariablesConstantsBot, FunctionsBot
 
 
 @VariablesConstantsBot.BOT.message_handler(state="*", commands=["custom"])
-def state_custom_start(message) -> None:
+def state_custom_start(message: telebot.types.Message) -> None:
     """
     Функция начального состояния диалога с ботом по команде custom
     Обновляет все атрибуты класса VariablesMutable

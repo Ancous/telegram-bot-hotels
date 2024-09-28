@@ -26,7 +26,7 @@ class LowApi:
     quantity_hotels = 0
 
     @classmethod
-    def low_result(cls: object, dict_result: dict) -> list:
+    def low_result(cls, dict_result: dict) -> list:
         """
         Делает запрос к API и распределяет выполнение работы по другим методам класса в зависимости от сортировки
 
@@ -102,7 +102,7 @@ class LowApi:
         return cls.info_hotels_list
 
     @classmethod
-    def low_price_low_to_high(cls: object) -> None:
+    def low_price_low_to_high(cls) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по цене
 
@@ -141,7 +141,7 @@ class LowApi:
             cls.info_hotels_list[count_hotel]["number_photo"] = number_photo
 
     @classmethod
-    def low_reviews(cls: object) -> None:
+    def low_reviews(cls) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по рейтингу
 
@@ -179,7 +179,7 @@ class LowApi:
             cls.info_hotels_list[count_hotel]["number_photo"] = number_photo
 
     @classmethod
-    def low_distance(cls: object) -> None:
+    def low_distance(cls) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по расстоянию от центра
 
@@ -218,7 +218,7 @@ class LowApi:
             cls.info_hotels_list[count_hotel]["number_photo"] = number_photo
 
     @classmethod
-    def low_star(cls: object) -> None:
+    def low_star(cls) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по звездности отеля
 

@@ -2,14 +2,16 @@
 Модуль работы по команде start
 """
 
+import telebot
+
+from keyboards import KeyboardsBot
+from database import create_user_db
 from config_data import FunctionsBot
 from config_data import VariablesConstantsBot
-from database import create_user_db
-from keyboards import KeyboardsBot
 
 
 @VariablesConstantsBot.BOT.message_handler(commands=["start"])
-def start(message: object) -> None:
+def start(message: telebot.types.Message) -> None:
     """
     При первом посещении записывает id пользователя и имя пользователя в базу данных
     Отправляет текст приветствия

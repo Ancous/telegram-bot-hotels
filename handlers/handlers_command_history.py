@@ -2,12 +2,14 @@
 Модуль работы по команде history
 """
 
-from config_data import VariablesConstantsBot
+import telebot
+
 from database import read_db
+from config_data import VariablesConstantsBot
 
 
 @VariablesConstantsBot.BOT.message_handler(commands=["history"])
-def history(message: object) -> None:
+def history(message: telebot.types.Message) -> None:
     """
     Выводит историю последних десять запросов поиска с ответами
 

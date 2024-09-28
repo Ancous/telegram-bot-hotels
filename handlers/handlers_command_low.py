@@ -7,15 +7,15 @@ import telebot
 from datetime import datetime
 from telebot.types import ReplyKeyboardRemove
 
-from config_data import FunctionsBot, VariablesConstantsBot, VariablesMutableBot
+from states import LowState
+from keyboards import KeyboardsBot
 from database import create_request_db, create_response_db
 from hotels_api import checking_city_country_recording_city_id, LowApi
-from keyboards import KeyboardsBot
-from states import LowState
+from config_data import FunctionsBot, VariablesConstantsBot, VariablesMutableBot
 
 
 @VariablesConstantsBot.BOT.message_handler(state="*", commands=["low"])
-def state_low_start(message: object) -> None:
+def state_low_start(message: telebot.types.Message) -> None:
     """
     Функция начального состояния диалога с ботом по команде low
     Обновляет все атрибуты класса VariablesMutable
@@ -42,7 +42,7 @@ def state_low_start(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.country)
-def state_high_country(message: object) -> None:
+def state_high_country(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Производит запись страны для поиска
@@ -69,7 +69,7 @@ def state_high_country(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.city)
-def state_high_city(message: object) -> None:
+def state_high_city(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Проверяет наличие id-города по запросу к hostel-api
@@ -115,7 +115,7 @@ def state_high_city(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.arrival_year)
-def state_low_arrival_year(message: object) -> None:
+def state_low_arrival_year(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Производит запись года заселения в номер
@@ -157,7 +157,7 @@ def state_low_arrival_year(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.arrival_month)
-def state_low_arrival_month(message: object) -> None:
+def state_low_arrival_month(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Производит запись месяца заселения в номер
@@ -202,7 +202,7 @@ def state_low_arrival_month(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.arrival_day)
-def state_low_arrival_day(message: object) -> None:
+def state_low_arrival_day(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Производит запись дня заселения в номер
@@ -248,7 +248,7 @@ def state_low_arrival_day(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.departure_year)
-def state_low_departure_year(message: object) -> None:
+def state_low_departure_year(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Производит запись года выезда из номера
@@ -295,7 +295,7 @@ def state_low_departure_year(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.departure_month)
-def state_low_departure_month(message: object) -> None:
+def state_low_departure_month(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Производит запись месяца выезда из номера
@@ -358,7 +358,7 @@ def state_low_departure_month(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.departure_day)
-def state_low_departure_day(message: object) -> None:
+def state_low_departure_day(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Производит запись дня выезда из номера
@@ -414,7 +414,7 @@ def state_low_departure_day(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.room_count)
-def state_low_room_count(message: object) -> None:
+def state_low_room_count(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Запоминает количество арендуемых номеров
@@ -452,7 +452,7 @@ def state_low_room_count(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.adults_count)
-def state_low_adults_count(message: object) -> None:
+def state_low_adults_count(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Производит запись о количестве проживающих в номере
@@ -493,7 +493,7 @@ def state_low_adults_count(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.children_count)
-def state_low_children_count(message: object) -> None:
+def state_low_children_count(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Запоминает количество детей и производит запись о детях если понадобится
@@ -562,7 +562,7 @@ def state_low_children_count(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.children_age)
-def state_low_children_age(message: object) -> None:
+def state_low_children_age(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Записывает возраст детей
@@ -630,7 +630,7 @@ def state_low_children_age(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.sort)
-def state_low_sort(message: object) -> None:
+def state_low_sort(message: telebot.types.Message) -> None:
     """
     Функция состояния диалога с ботом по команде low
     Производит запись выбранной сортировки
@@ -670,7 +670,7 @@ def state_low_sort(message: object) -> None:
 
 
 @VariablesConstantsBot.BOT.message_handler(state=LowState.count)
-def state_low_count(message: object) -> None:
+def state_low_count(message: telebot.types.Message) -> None:
     """
     Функция завершения состояния диалога с ботом по команде low
     Выводит пользователю результаты по его запросу

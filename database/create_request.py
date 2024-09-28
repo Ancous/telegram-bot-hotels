@@ -4,8 +4,8 @@
 
 from datetime import datetime
 
-from config_data import VariablesConstantsBot, VariablesMutableBot
 from database import Request, User
+from config_data import VariablesConstantsBot, VariablesMutableBot
 
 
 def create_request_db(message: object, dict_result: dict, command: str) -> None:

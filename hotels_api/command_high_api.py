@@ -26,7 +26,7 @@ class HighApi:
     quantity_hotels = 0
 
     @classmethod
-    def high_result(cls: object, dict_result: dict) -> list:
+    def high_result(cls, dict_result: dict) -> list:
         """
         Делает запрос к API и распределяет выполнение работы по другим методам класса в зависимости от сортировки
 
@@ -72,7 +72,7 @@ class HighApi:
         return cls.info_hotels_list
 
     @classmethod
-    def high_price_low_to_high(cls: object) -> None:
+    def high_price_low_to_high(cls) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по цене
 
@@ -109,7 +109,7 @@ class HighApi:
             cls.info_hotels_list[count_hotel]["number_photo"] = number_photo
 
     @classmethod
-    def high_review(cls: object) -> None:
+    def high_review(cls) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по рейтингу
 
@@ -143,7 +143,7 @@ class HighApi:
             cls.info_hotels_list[count_hotel]["number_photo"] = number_photo
 
     @classmethod
-    def high_distance(cls: object) -> None:
+    def high_distance(cls) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по расстоянию от центра
 
@@ -178,7 +178,7 @@ class HighApi:
             cls.info_hotels_list[count_hotel]["number_photo"] = number_photo
 
     @classmethod
-    def high_star(cls: object) -> None:
+    def high_star(cls) -> None:
         """
         Выполняет подбор отелей и записывает информацию по ним если сортировка по звездности отеля
 

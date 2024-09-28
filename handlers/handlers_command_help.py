@@ -2,11 +2,13 @@
 Модуль работы по команде help
 """
 
+import telebot
+
 from config_data import VariablesConstantsBot
 
 
 @VariablesConstantsBot.BOT.message_handler(commands=["help"])
-def my_help(message: object) -> None:
+def my_help(message: telebot.types.Message) -> None:
     """
     Отправляет подсказку по командам бота
 

@@ -3,12 +3,14 @@
 """
 
 import time
-from calendar import monthrange
-from datetime import datetime
-from typing import Optional
+import telebot
 
-from config_data.variables_constants_bot import VariablesConstantsBot
+from typing import Optional
+from datetime import datetime
+from calendar import monthrange
+
 from config_data.variables_mutable_bot import VariablesMutableBot
+from config_data.variables_constants_bot import VariablesConstantsBot
 
 
 class FunctionsBot:
@@ -157,7 +159,7 @@ class FunctionsBot:
                 return VariablesMutableBot.list_days
 
     @staticmethod
-    def conversation_transition(message: object) -> None:
+    def conversation_transition(message: telebot.types.Message) -> None:
         """
         Отлавливает из введенного текста пользователя команды и вызывает нужную функции
 

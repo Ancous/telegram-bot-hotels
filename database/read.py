@@ -2,10 +2,12 @@
 Модуль поиска последних десяти запросов поиска
 """
 
+import telebot
+
 from database import Request, User, Response
 
 
-def read_db(message: object) -> dict:
+def read_db(message: telebot.types.Message) -> dict:
     """
     Читает базу данных и собирает последние десять запросов с ответами пользователя
 
